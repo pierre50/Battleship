@@ -1,0 +1,407 @@
+<div class="MessagePanel" id="battleDiv" style="display:none">
+	<div class="row text-center">
+		<div class="col-md-6">
+			<label>Your grid</label>
+			<div id="yourGameBoard" class="board">
+			</div>
+			<div id="yourOptions">
+			 	<label><input type="radio" name="boatsize" value="5" checked>Carrier(<span id="carrierSpan">1</span>)</label>
+			  	<label><input type="radio" name="boatsize" value="4"> Battleships(<span id="battleshipsSpan">2</span>)</label>
+			  	<label><input type="radio" name="boatsize" value="3"> Submarine(<span id="submarineSpan">1</span>)</label>
+			  	<label><input type="radio" name="boatsize" value="2"> Destroyers(<span id="destroyersSpan">3</span>)</label>
+			  	<button id="boatRotateBtn" class="btn">Rotate</button>
+			  	<button id="boatRemoveBtn" class="btn">Clear</button>
+			  	<button id="yourReadyBtn" class="btn">Ready</button>
+		  	</div>
+		</div>
+		<div class="col-md-6">
+			<label>Opponent's grid</label>
+			<div id="oppoGameBoard" class="board">
+			</div>
+			<div id="oppoOptions">
+				<button id="oppoReadyBtn" class="btn" disabled>Ready</button>
+			</div>
+		</div>
+		<div class="col-md-12">
+		<span id="timerSpan"></span>
+		<h5 id="whoseTurnText" style="display: none">It's <span>Pierre</span> turn !</h5>
+		</div>
+	</div>
+
+	<canvas id="myCanvas" width="0" height="0" style="position: absolute;">
+	<div id="myCursor" width="20" height="20" style="position: absolute; background-color: blue"></div>
+</div>
+
+<% include modals/endgame %>
+
+<script>
+// Board settings
+var rows = 10;
+var cols = 10;
+var squareSize = 32;
+
+// Game settings
+var info={
+	round:0,
+	missCount:0,
+	hitCount:0,
+	playingTime:0,
+}
+
+var yourTableGameBoard,oppoTableGameBoard;
+
+// Boat settings
+var boatSize=5;
+var direction="vertical";
+
+
+var yourGameBoard = document.getElementById("yourGameBoard");
+var oppoGameBoard = document.getElementById("oppoGameBoard");
+
+// Define a empty 2D table of the map
+var emptyTableGameBoard = [
+				[0,0,0,0,0,0,0,0,0,0],
+				[0,0,0,0,0,0,0,0,0,0],
+				[0,0,0,0,0,0,0,0,0,0],
+				[0,0,0,0,0,0,0,0,0,0],
+				[0,0,0,0,0,0,0,0,0,0],
+				[0,0,0,0,0,0,0,0,0,0],
+				[0,0,0,0,0,0,0,0,0,0],
+				[0,0,0,0,0,0,0,0,0,0],
+				[0,0,0,0,0,0,0,0,0,0],
+				[0,0,0,0,0,0,0,0,0,0]
+				]
+
+
+// Draw the board for player and opponent
+FillGameBoard(yourGameBoard,"y");
+FillGameBoard(oppoGameBoard,"o");
+
+// Create a 2D table of div
+function FillGameBoard(board,text){
+	for (var x = 0; x < rows; x++) {
+	  	for (var y = 0; y < cols; y++) {
+			// create a new div HTML element for each grid square and make it the right size
+			var square = document.createElement("div");
+			board.appendChild(square);
+
+	    	// give each div element a unique id based on its row and column, like "s00"
+			square.id = text + y + x;			
+			
+			// set each grid square's coordinates: multiples of the current row or column number
+			var topPosition = y * squareSize;
+			var leftPosition = x * squareSize;			
+			
+			// use CSS absolute positioning to place each grid square on the page
+			square.style.top = topPosition + 'px';
+			square.style.left = leftPosition + 'px';
+	  	}
+	}
+}
+
+// Function if the opponent leave the game
+function oppoLeaveGame(room){
+	if (inGame){
+		if (room==inGame.room){
+			endGame(null);
+		}
+	}
+}
+
+// When a user is ready to play
+function oppoReadyToPlay(room,board){
+	if (room==inGame.room){
+		inGame.player2.ready=true;
+		document.getElementById("oppoReadyBtn").className="btn btn-success";
+		oppoTableGameBoard=board;
+		// If both are ready to play we notif the first one, and start the game
+		if (inGame.player1.ready==true){
+			//whoseTurn=inGame.player1;
+			inGame.ready=true;
+			$('#yourOptions').hide();
+			$('#oppoOptions').hide();
+			gameStart(inGame,room);
+			$('#whoseTurnText')[0].children[0].innerText=inGame.whoseTurn.username;
+			$('#whoseTurnText').show();
+		}
+	}
+}
+
+
+function setGameId(gameId){
+	inGame.player1.gameId=gameId;
+}
+// The first ready user, receive the other to start the game
+function gameStarted(room,board,gameId){
+	if (room==inGame.room){
+		//whoseTurn=inGame.player2;
+		inGame.player1.gameId=gameId;
+		inGame.ready=true;
+		$('#yourOptions').hide();
+		$('#oppoOptions').hide();
+		$('#whoseTurnText')[0].children[0].innerText=inGame.whoseTurn.username;
+		$('#whoseTurnText').show();
+	}
+}
+
+yourGameBoard.addEventListener("click",placeBoat, false);
+yourGameBoard.addEventListener("mouseover",hoverPlaceBoat, false);
+yourGameBoard.addEventListener("mouseout",outPlaceBoat, false);
+
+oppoGameBoard.addEventListener("click",fireOn, false);
+
+document.getElementById("boatRotateBtn").addEventListener("click",rotateBoat, false);
+document.getElementById("boatRemoveBtn").addEventListener("click",removeBoat, false);
+document.getElementById("yourReadyBtn").addEventListener("click",verifyBoard, false);
+
+// Change the boat size input
+$('input[name="boatsize"]').change(function(){
+    boatSize=this.value;
+});
+
+// Update the count down every 1 second
+var x = setInterval(function() {
+	if (inGame){
+		if ((inGame.ready)&&(inGame.whoseTurn.id==inGame.player1.id)){
+			info.playingTime+=1;
+			document.getElementById('timerSpan').innerText="Your time playing : " + info.playingTime + "s";
+		}
+	}
+}, 1000);
+
+// Function to shoot a square
+function fireOn(e) {
+	if ((inGame.ready)&&(inGame.whoseTurn.id==inGame.player1.id)){
+	    // If item clicked (e.target) is not the parent element on which the event listener was set (e.currentTarget)
+		if (e.target !== e.currentTarget) {
+	        // Extract row and column # from the HTML element's id
+			var row = e.target.id.substring(1,2);
+			var col = e.target.id.substring(2,3);
+
+			// If player clicks a square with no ship, change the color and change square's value
+			if (oppoTableGameBoard[row][col] == 0) {
+				e.target.style.background = '#bbb';
+				// Set this square's value to 3 to indicate that they fired and missed
+				oppoTableGameBoard[row][col] = 3;
+				// Increment round count
+				info.round++;
+				// Increment missing count
+				info.missCount++;
+				// Change turn
+				changeTurn();
+				// Send shoot to database and to opponent
+				sendShot(inGame,row,col,oppoTableGameBoard[row][col],info);
+			// If player clicks a square with a ship, change the color and change square's value
+			} else if (oppoTableGameBoard[row][col] == 1) {
+				e.target.style.background = 'red';
+				// Set this square's value to 2 to indicate the ship has been hit
+				oppoTableGameBoard[row][col] = 2;
+				// Send shoot to database and to opponent
+				sendShot(inGame,row,col,oppoTableGameBoard[row][col],info);
+				// Increment hitCount each time a ship is hit
+				info.hitCount++;
+				// This definitely shouldn't be hard-coded, but here it is anyway. lazy, simple solution:
+				if (info.hitCount >= 22) {
+					winGame(inGame,info);
+					endGame(inGame.player1);
+				}
+			// If player clicks a square that's been previously hit, let them know
+			} else if (oppoTableGameBoard[row][col] > 1) {
+				// Increment round count
+				info.round++;
+				// Increment missing count
+				info.missCount++;
+				// Change turn
+				changeTurn();
+				// Send shoot to database and to opponent
+				sendShot(inGame,row,col,oppoTableGameBoard[row][col],info);
+			}		
+	    }
+	}
+   	e.stopPropagation();
+}
+
+
+
+// When user receive a shot from opponent
+function receiveShot(data,row,col,stat){
+	yourTableGameBoard[row][col] = stat;
+	var square = document.getElementById("y"+row+col);
+	if (stat==2){
+		square.style.background='red';
+	}else if (stat==3){
+		changeTurn();
+		square.style.background='#bbb';
+	}
+}	
+
+function changeTurn(){
+	if (inGame){
+		if (inGame.whoseTurn.id==inGame.player1.id){
+			inGame.whoseTurn=inGame.player2;
+		}else if (inGame.whoseTurn.id==inGame.player2.id){
+			inGame.whoseTurn=inGame.player1;
+		}
+		$('#whoseTurnText')[0].children[0].innerText=inGame.whoseTurn.username;
+	}
+}
+
+// Verification the board before starting the game
+function verifyBoard(){
+	if (inGame.ready==false){
+		var cptSquareBoat=0;
+		yourTableGameBoard=emptyTableGameBoard;
+
+		// Count how many boat are placed and prepair the 2D table
+		for (var x = 0; x < rows; x++) {
+		  	for (var y = 0; y < cols; y++) {
+		  		var square = document.getElementById("y"+y+x);	
+		  		if (square.className=="placed"){
+		  			cptSquareBoat++;
+	  			 	yourTableGameBoard[y][x]=1;
+		  		}else{
+					yourTableGameBoard[y][x]=0;
+		  		}
+		  	}
+		}
+
+		if (cptSquareBoat==22){
+			inGame.player1.ready=true;
+			document.getElementById("yourReadyBtn").className="btn btn-success";
+			userReadyToPlay(inGame,yourTableGameBoard);
+		}else{
+			alert("You must put all the boat on the grid !")
+		}
+	}
+}
+
+// Rotate the boat
+function rotateBoat(){
+	if (inGame.ready==false){
+	    if (direction=="vertical"){
+	    	direction="horizontal";
+	    }else if(direction=="horizontal"){
+	    	direction="vertical";
+	    }
+	}
+}
+
+// Remove all the boat placed on the grid
+function removeBoat(){
+	if (inGame.ready==false){
+		for (var x = 0; x < rows; x++) {
+		  	for (var y = 0; y < cols; y++) {
+		  		var square = document.getElementById("y"+y+x);	
+		  		square.className="";
+		  	}
+		}
+		var inputs=$('input[name="boatsize"]');
+		inputs[0].parentElement.children[1].textContent=1;
+		inputs[1].parentElement.children[1].textContent=2;
+		inputs[2].parentElement.children[1].textContent=1;
+		inputs[3].parentElement.children[1].textContent=3;
+	}
+}
+
+// Change square hover to nothing and blocked to placed
+function outPlaceBoat(e){
+	if (inGame.ready==false){
+		var row = e.target.id.substring(1,2);
+		var col = e.target.id.substring(2,3);
+		var square;
+		for (var i = 0; i < boatSize; i++) {
+			if (direction=="horizontal"){
+				square = document.getElementById("y"+row+(Number(col)+i));			
+			}else if (direction=="vertical"){
+				square = document.getElementById("y"+(Number(row)+i)+col);
+			}
+			if (square!=null){
+				if (square.className=="hover"){
+					square.className="";
+				}else if(square.className=="blocked"){
+					square.className="placed";
+				}
+			}
+		}
+	}
+}
+
+// Change square nothing to hover
+function hoverPlaceBoat(e){
+	if (inGame.ready==false){
+		var row = e.target.id.substring(1,2);
+		var col = e.target.id.substring(2,3);
+		var square;
+		for (var i = 0; i < boatSize; i++) {
+			if (direction=="horizontal"){
+				var square = document.getElementById("y"+row+(Number(col)+i));			
+			}else if (direction=="vertical"){
+				var square = document.getElementById("y"+(Number(row)+i)+col);
+			}		
+			if (square!=null){
+				if (square.className==""){
+					square.className="hover";
+				}else{
+					square.className="blocked"
+				}
+			}
+		}
+	}
+}
+
+// Function that place the boat
+function placeBoat(e){
+	if (inGame.ready==false){
+		var valid=false;
+		var inputs=$('input[name="boatsize"]');
+		for (var i = 0; i < inputs.length; i++) {
+			if (inputs[i].checked==true){
+				var cptBoat=Number(inputs[i].parentElement.children[1].textContent);
+			}
+		}
+
+		if (cptBoat>0){
+			var cptSquare=0;
+			var row = e.target.id.substring(1,2);
+			var col = e.target.id.substring(2,3);
+			var square;
+			for (var i = 0; i < boatSize; i++) {
+				if (direction=="horizontal"){
+					var square = document.getElementById("y"+row+(Number(col)+i));			
+				}else if (direction=="vertical"){
+					var square = document.getElementById("y"+(Number(row)+i)+col);
+				}		
+				if (square!=null){
+					if (square.className=="hover"){
+						cptSquare+=1;
+					}
+				}
+			}
+			for (var i = 0; i < boatSize; i++) {
+				if (direction=="horizontal"){
+					var square = document.getElementById("y"+row+(Number(col)+i));			
+				}else if (direction=="vertical"){
+					var square = document.getElementById("y"+(Number(row)+i)+col);
+				}		
+				if (square!=null){
+					if (square.className=="hover"){
+						if (cptSquare==boatSize){
+							valid=true;
+							square.className="placed";
+						}
+					}
+				}
+			}
+			if (valid){
+				for (var i = 0; i < inputs.length; i++) {
+					if (inputs[i].checked==true){
+						inputs[i].parentElement.children[1].textContent=cptBoat-1;
+					}
+				}
+			}
+		}else{
+			alert("You reach the limit for this boat !")
+		}
+	}
+}
+</script>

@@ -1,0 +1,51 @@
+<div class="modal fade" id="userProfileModal" tabindex="-1" role="dialog" aria-labelledby="userProfileModalTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="userProfileModalTitle">User profile</h5>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <h5 id="usernameProfileText"></h5>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a id="addUserBtn" name="add" style="display:none;"><button class="btn btn-success">Add contact</button></a>
+        <a id="deleteUserBtn" name="delete" style="display:none;"><button class="btn btn-danger">Delete contact</button></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var userModal;
+
+function setUserProfile(user){
+  userModal=user;
+  document.getElementById('usernameProfileText').innerText=user.username;
+  var contactLu=document.getElementById(user.id);
+  if (contactLu){
+    $('#deleteUserBtn').show();
+    $('#addUserBtn').hide();
+  }else{
+    $('#deleteUserBtn').hide();
+    $('#addUserBtn').show();
+  }
+}
+
+$('#deleteUserBtn').click(function() {
+  if (userModal){
+    deleteContact(user, userModal);
+    deleteSuccess({user:userModal});
+    $('#deleteUserBtn').hide();
+    $('#addUserBtn').show();
+  }
+});
+
+$('#addUserBtn').click(function() {
+  if (userModal){
+    SendRequest(user, userModal);
+  }
+});
+
+</script>

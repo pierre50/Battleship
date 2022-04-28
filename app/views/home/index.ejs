@@ -1,0 +1,11 @@
+<% include header %>
+<% include home %>
+<% include about %>
+<% include team %>
+
+<script>
+    $(document).on('click', 'a[href^="#"].nav-link', function (e) {
+        e.preventDefault();
+        $('html, body').animate({ scrollTop: $($(this).attr('href')).offset().top}, 500, 'linear');
+    });
+</script>

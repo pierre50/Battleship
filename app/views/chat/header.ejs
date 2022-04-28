@@ -1,0 +1,48 @@
+<span class="name">
+	<div id="chatInfo">
+		<img src="/img/group.png"/>
+		<div id="chatCount" style="display: inline;"></div>
+		<h6 style="display: inline;">Global chat</h6>
+	</div>
+	<div id="contactInfo" style="display:none">
+		<div id="contactStatus"></div>
+		<h6 id="contactUsername"></h6>
+		<button id="inviteUserGameBtn" class="btn btn-sm">Invite</button>
+	</div>
+</span>
+
+<% include modals/gamerequest %>
+
+<script>
+// When a contact status changed
+function StatusChangedBis(data){
+	var contact = document.getElementById("contactStatus");
+	if (contact!=null){
+		var status="offline.png";
+		switch(data.newstatus) {
+		    case "Online":
+		        status="online.png";
+		        break;
+		    case "Offline":
+		        status="offline.png";
+		        break;
+		    case "Busy":
+		        status="busy.png";
+		        break;
+		    case "Away":
+		        status="away.png";
+		        break;
+		    default:
+		        status="offline.png";
+		}
+		$(contact)[0].innerHTML='<img src="/img/'+status+'" alt="" />';
+	}
+}
+
+$("#inviteUserGameBtn").click(function() {
+	if (contactCurrent){
+		contactGameRequest(contactCurrent);
+		sendUserGameRequest(user,contactCurrent.id);
+	}
+});
+</script>

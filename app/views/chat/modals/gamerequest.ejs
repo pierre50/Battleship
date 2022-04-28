@@ -1,0 +1,79 @@
+<div class="modal fade" id="userGameRequestModal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="userGameRequestModalTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="userGameRequestModalTitle"></h5>
+      </div>
+      	<div class="modal-body">
+	      	<center>
+	      		<div id="loadingUserDiv" class="loader"></div>
+	      		<button id="acceptUserGameRequestBtn" class="btn btn-success">Accept</button>
+	      		<button id="refuseUserGameRequestBtn" class="btn btn-danger">refuse</button>
+	      	</center>
+      	</div>
+    	<div class="modal-footer" id="userGameRequestModalFooter">
+        	<button type="button" id="cancelUserGameModalBtn" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var userRequest;
+var contactRequest;
+
+function contactGameRequest(contact){
+	if (contact){
+		contactRequest=contact;
+		$('#acceptUserGameRequestBtn').hide();
+		$('#refuseUserGameRequestBtn').hide();
+		$('#loadingUserDiv').show();
+		$('#userGameRequestModalFooter').show();
+		$('#cancelUserGameModalBtn').show();
+		document.getElementById('userGameRequestModalTitle').innerText="Waiting for " + contact.username + " reply !"
+		$('#userGameRequestModal').modal('show');
+	}
+}
+function userGameRequest(user){
+	if (user){
+		userRequest=user;
+		$('#acceptUserGameRequestBtn').show();
+		$('#refuseUserGameRequestBtn').show();
+		$('#loadingUserDiv').hide();
+		$('#userGameRequestModalFooter').hide();
+		$('#cancelUserGameModalBtn').hide();
+		document.getElementById('userGameRequestModalTitle').innerText=user.username + " want play with you !"
+		$('#userGameRequestModal').modal('show');
+		$('#searchUserModal').modal('hide');
+		cancelSearchUserGame(user);
+	}
+}
+$("#acceptUserGameRequestBtn").click(function() {
+	if (userRequest){
+		acceptUserGameRequest(user,userRequest);
+	}
+});
+$("#refuseUserGameRequestBtn").click(function() {
+	if (userRequest){
+		refuseUserGameRequest(user,userRequest);
+		$('#userGameRequestModal').modal('hide');
+	}
+});
+$("#cancelUserGameModalBtn").click(function() {
+	if (contactRequest){
+		refuseUserGameRequest(user,contactRequest);
+		$('#userGameRequestModal').modal('hide');
+	}
+});
+function refusedUserGameModal(from,to){
+	if(contactRequest){
+		if (contactRequest.id==from.id){
+			$('#userGameRequestModal').modal('hide');
+		}
+	}else if(userRequest){
+		if (userRequest.id==from.id){
+			$('#userGameRequestModal').modal('hide');
+		}
+	}
+}
+</script>

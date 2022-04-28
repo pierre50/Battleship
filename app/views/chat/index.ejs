@@ -1,0 +1,131 @@
+<div class="MessagePanel">
+	<div class="message-header">
+		<% include header %>
+	</div>
+	<div class="message-body">
+		<div id="chat" class="chatlogs">
+            <div id="chatGroup"></div>
+		</div>
+	</div>
+	<div class="message-footer">
+		<form id="messageForm" class="chatform">
+				<div class="form-control messagebox" id="message" contentEditable="true" placeholder="Write your message.."></div>
+		</form>
+	</div>
+</div>
+
+
+<script>
+
+/*
+/	Message system
+/
+*/
+var $messageForm=$('#messageForm');
+var $message=$('#message');
+var $chat=$('#chat');
+
+$chat[0].scrollTop = $chat[0].scrollHeight; 
+
+// User is typing in message textbox
+$message.keydown(function(e) {
+	value=$message[0].textContent;
+	if (value){
+		if(event.keyCode == 13){
+	  		e.preventDefault();
+	      	$(this).submit();
+	  	}
+	}else if(event.keyCode == 13){
+		e.preventDefault();
+	}
+});
+
+// Submit a message
+$messageForm.submit(function(e){
+    e.preventDefault();
+    if ($message[0].textContent!=''){
+        var message_secure=raw($message[0].textContent);
+    	if (isURL(message_secure) == true) {
+    		SendMsg(message_secure,user,contactCurrent,'url');
+    	} else{
+			SendMsg(message_secure,user,contactCurrent,'texte');
+    	}
+
+    	$($message).empty();
+    }
+});
+
+// When receive a new message
+function NewMsg(data){
+	var isWatching=false;
+
+    if (contactCurrent){
+        if (data.to!=null){
+            if ((contactCurrent.id==data.from.id)||(data.from.id==data.to.id)){
+                isWatching=true;
+            }
+        }
+    }else if (data.to==null){
+        isWatching=true;
+
+    }
+
+    if (data.to){
+        if (data.from.id==data.to.id){
+            var target = document.getElementById('chat'+contactCurrent.id)
+            if (target){
+                box=target;
+            }else{
+                var box = document.createElement("div");
+                box.id="chat"+contactCurrent.id;
+                $chat.append(box);
+            }
+        }else{
+            var target = document.getElementById('chat'+data.from.id)
+            if (target){
+                box=target;
+            }else{
+                var box = document.createElement("div");
+                box.id="chat"+data.from.id;
+                if (contactCurrent){
+                    if (contactCurrent.id!=data.from.id){
+                        box.style.display = "none";
+                    }
+                }else{
+                    box.style.display = "none";
+                }
+                $chat.append(box);
+            }
+        }
+    }else{
+        var target = document.getElementById('chatGroup')
+        if (target){
+            box=target;
+        }
+    }
+
+	// Change special character of different type
+    if(data.type == 'texte' || data.type =='info') { var msg = raw(data.msg); }
+    else if (data.type == 'url') { var msg = getURL(raw(data.msg)); }
+
+    // We display the message with a different style if the message is from the current user
+    if (data.type!='info'){
+	    box.innerHTML+='<div class="chat"><div class="title"><span class="name">'+ data.from.username +'</span><span class="date">'+data.date+'</span></div><div class="message">'+msg+'</div></div>';
+	}else{
+		box.innerHTML+='<div class="alert alert-info" role="alert"><strong>Info!</strong> '+msg+'</div>';
+	}
+
+	// Scroll the message to the bottom
+	$chat[0].scrollTop = $chat[0].scrollHeight; 
+
+    if (isWatching){
+    }else if (data.type!='info'){
+		audioMsg.play();
+        if (data.to){
+            AddUnreadMessage(data.to,data.from.userId);
+        }
+    }
+
+}
+
+</script>

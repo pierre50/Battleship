@@ -1,0 +1,64 @@
+
+<html>
+<head>
+	<title>Battleship</title>
+
+	<!--<meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+	
+	<link rel="stylesheet" href="/css/bootstrap.min.css">
+
+	<link rel="stylesheet" href="/css/styles.css">
+	<link rel="stylesheet" href="/css/header.css">
+	<link rel="stylesheet" href="/css/contact.css">
+	<link rel="stylesheet" href="/css/message.css">
+	<link rel="stylesheet" href="/css/game.css">
+	
+	<!-- Insert this line above script imports  -->
+	<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+
+	<script src="/js/jquery-3.2.1.min.js"></script>
+	<script src="/js/tether.min.js"></script>
+	<script src="/js/bootstrap.min.js"></script>
+
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="/js/others.js"></script>
+
+	<!-- Insert this line after script imports -->
+	<script>if (window.module) module = window.module;</script>
+
+</head>
+<body>
+
+	<!-- 
+	# Main Page
+	#
+	-->
+	<% if(content=="home/index"){ %>
+		<%- include(content) %>
+	 <% } else{ %> 
+		<script> var user = <%-JSON.stringify(user)%> 
+				var contacts = <%-JSON.stringify(contacts)%> 
+				var contactCurrent,inGame;
+		</script>
+
+		<div class="row nopadding" style="height:100%;">
+			<div class="col-md-12 nopadding">
+				<% include play/header %>
+				<div class="row nopadding" style="height: calc(100% - 85px);">
+					<div class="col-md-2 nopadding" style="z-index= -1;">
+						<% include chat/contact %>
+					</div>
+					<div class="col-md-8 nopadding" style="z-index= -1;">
+						<%- include(content) %>
+					</div>
+					<div class="col-md-2 nopadding" style="z-index= -1;">
+						<% include chat/index %>
+					</div>
+				</div>
+			</div>
+		</div>
+	<% } %>
+	<script src="/client.js"></script>
+
+</body>
+</html>

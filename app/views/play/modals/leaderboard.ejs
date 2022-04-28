@@ -1,0 +1,32 @@
+<div class="modal fade" id="leaderboardModal" tabindex="-1" role="dialog" aria-labelledby="leaderboardModalTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="leaderboardTitle">Leaderboard</h5>
+      </div>
+      <div class="modal-body">
+        <div id="leaderboardDiv">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+$('#leaderboardBtn').on('click', function(){
+  getLeaderboard();
+  $('#leaderboardModal').modal('show');
+});
+function setLeaderboard(leaderboard){
+  var div = document.getElementById('leaderboardDiv');
+  div.innerHTML="";
+  for (var i = 0; i < 3; i++) {
+    var h5 = document.createElement("h5");
+    h5.innerText=leaderboard[i].rank + " " + leaderboard[i].username;
+    div.append(h5)
+  }
+}
+</script>

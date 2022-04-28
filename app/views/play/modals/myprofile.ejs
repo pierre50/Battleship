@@ -1,0 +1,71 @@
+<div class="modal fade" id="myProfileModal" tabindex="-1" role="dialog" aria-labelledby="myProfileModalTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="myProfileModalTitle">Your profile</h5>
+      </div>
+      <div class="modal-body">
+        <form id="form" action="/profile" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+            	<h5><%= user.username %></h5>
+            </div>
+            <div class="row form-group">
+                <div class="col-6">
+                    <input id="oldpassword" type="password" class="form-control" name="oldpassword" placeholder="Old password" disabled>
+                </div>
+                <button class="btn" id="reset">Edit</button>
+            </div>
+            <div id="rstpass">
+                <div class="row form-group">
+                    <div class="col-6">
+                        <input id="newpassword" type="password" class="form-control" name="newpassword" placeholder="New password">
+                    </div>
+                </div>
+                <div class="row form-group">
+                    <div class="col-6">
+                        <input id="confpassword" type="password" class="form-control" name="confpassword" placeholder="Confirm password">
+                    </div>
+                </div>
+            </div>
+
+            <input type="submit" class="btn btn-primary" value="Save" >
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+$reset=$('#reset');
+
+$reset.click(function(e) {
+    e.preventDefault();
+
+    if ($reset[0].innerText=="Edit"){
+        document.getElementById('rstpass').style.display = 'block';
+        document.getElementById('rstpass').style.visibility = 'visible';
+        document.getElementById('oldpassword').disabled = false;
+        document.getElementById('oldpassword').required = true;
+        document.getElementById('newpassword').required = true;
+        document.getElementById('confpassword').required = true;
+        $reset[0].innerText="Cancel";
+    }else{
+        document.getElementById('rstpass').style.display = 'none';
+        document.getElementById('rstpass').style.visibility = 'hidden';
+        document.getElementById('oldpassword').disabled = true;
+        document.getElementById('oldpassword').value = "";
+        document.getElementById('newpassword').value = "";
+        document.getElementById('confpassword').value = "";
+        document.getElementById('oldpassword').required = false;
+        document.getElementById('newpassword').required = false;
+        document.getElementById('confpassword').required = false;
+        $reset[0].innerText="Edit";
+
+    }
+});
+
+</script>

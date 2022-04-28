@@ -1,0 +1,308 @@
+<div class="ContactPanel">
+	<div class="contact-header">
+		<input class="search" id="searchInput" onkeyup="searchContact('searchInput','contactsLu')" type="text" placeholder="Search a user" data-container="body" data-toggle="popover" data-placement="right" data-content="Press Enter to open user profile"/>
+	</div>
+	<div class="contact-body">
+		<h6 id="globalChat" class="selected"> Global chat </h6>
+
+		<h6  id="requestsTitle"> Requests </h6>
+		<div id="requestsPanel" class="contactlogs">
+			<ul class="list-group" id="requestsLu">
+			  	<% requests.forEach(function(contact){ %>
+				   <li class="list-group-item" id="r<%= contact.contactId %>">
+				   		<label class="title"><%= contact.username %></label></a>
+						<button id="accept" type="button" class="btn btn-success btn-sm btn-space" >V</button>
+						<button id="refuse" type="button" class="btn btn-danger btn-sm" >X</button>
+				   	</li>
+		  		<% }); %>
+			</ul>
+		</div>
+
+		<h6 id="friendsTitle"> Friends </h6>
+		<div id="friendsPanel" class="contactlogs">
+			<ul class="list-group" id="contactsLu">
+			  	<% contacts.forEach(function(contact){ %>
+				   <li class="list-group-item" id="<%= contact.id %>">
+					    <%switch (contact.status) {
+							case "Online":%>
+								<img src="/img/online.png" alt="" /> 
+							<%break;
+			   				case "Offline":%>
+			   					<img src="/img/offline.png" alt="" />
+			   				<%break;
+			   				case "Busy":%>
+			   					<img src="/img/busy.png" alt="" />
+			   				<%break;
+			   				case "Away":%>
+			   					<img src="/img/away.png" alt="" /> 
+			   				<%break;
+			   				default: %>
+				    			<img src="/img/offline.png" alt="" /> 
+				    	<% } %>
+
+					   	<%if (contact.from_fk == user.id) {%>
+							<span class="title"><%= contact.username %></span>
+							<%if (contact.notif_from > 0){ %>
+								<span class="message-notif"><%= contact.notif_from %></span>
+							<% } %>
+						<% }else{ %>
+							<span class="title"><%= contact.username %></span>
+							<%if (contact.notif_to > 0){ %>
+								<span class="message-notif"><%= contact.notif_to %></span>
+							<% } %>
+						<% } %>
+				   	</li>
+
+			  	<% }); %>
+			</ul>	
+		</div>
+	</div>
+</div>
+
+<% include modals/profile %>
+
+<script>
+ $('[data-toggle="popover"]').popover()
+
+// Functions to toggle, requests, groups and friends
+$('#friendsTitle').on('click', function () {
+    $('#friendsPanel').toggle();
+});
+
+$("#globalChat").click(function() {
+    ul = document.getElementById('contactsLu');
+    li = ul.getElementsByTagName('li');    
+    for (i = 0; i < li.length; i++) {
+    	li[i].className="list-group-item";
+    }
+    
+    getUserGlobalChat();
+
+    for (var i = 0; i < $('#chat')[0].children.length; i++) {
+    	$($('#chat')[0].children[i]).hide();
+    }
+    $("#globalChat")[0].className="selected";
+    $('#chatGroup').show();
+    $('#chatInfo').show();
+    $('#contactInfo').hide();
+    contactCurrent=null;
+});
+
+function setUserGlobalChat(users){
+	if (users){
+		$('#chatCount')[0].innerText=users.length;
+	}
+}
+
+$("#contactsLu li").click(function() {
+    var contactId=this.id;
+
+    for (var i = 0; i < $('#chat')[0].children.length; i++) {
+    	$($('#chat')[0].children[i]).hide();
+    }
+	$('#chat'+contactId).show();
+
+    ul = document.getElementById('contactsLu');
+    li = ul.getElementsByTagName('li');    
+    for (i = 0; i < li.length; i++) {
+    	li[i].className="list-group-item";
+    }
+
+	this.className+=" selected"
+	contacts.forEach(function(contact) {
+		if (contact.id==contactId){
+			contactCurrent=contact;
+		}
+	});
+	$("#globalChat")[0].className="";
+	$("#contactStatus")[0].innerHTML='<img src="/img/'+contactCurrent.status.toLowerCase()+'.png" alt="" />';
+	$('#contactUsername')[0].innerText=contactCurrent.username;
+    $('#chatInfo').hide();
+    $('#contactInfo').show();
+});
+
+
+// Search a specific contact
+function searchContact(inp,lu) {
+    // Declare variables
+    var input, filter, ul, li, a, i;
+    input = document.getElementById(inp);
+
+    filter = input.value.toUpperCase();
+    ul = document.getElementById(lu);
+    li = ul.getElementsByTagName('li');
+    // Loop through all list items, and hide those who don't match the search query
+    for (i = 0; i < li.length; i++) {
+        if (li[i].innerHTML.toUpperCase().indexOf(filter) > -1) {
+            li[i].style.display = "";
+        } else {
+            li[i].style.display = "none";
+        }
+    }
+}
+
+// When a contact status changed
+function StatusChanged(data){
+	var contact = document.getElementById(data.userid);
+	if (contact!=null){
+		var status="offline.png";
+		switch(data.newstatus) {
+		    case "Online":
+		        status="online.png";
+		        break;
+		    case "Offline":
+		        status="offline.png";
+		        break;
+		    case "Busy":
+		        status="busy.png";
+		        break;
+		    case "Away":
+		        status="away.png";
+		        break;
+		    default:
+		        status="custom.png";
+		}
+		$(contact)[0].children[0].outerHTML='<img src="/img/'+status+'" alt="" />';
+	}
+}
+
+function AddContactNotif(userId){
+	var userLi= document.getElementById(userId);
+	if (userLi){
+		var notif = userLi.getElementsByClassName("message-notif")[0];
+		if (notif){
+			notif.innerText=Number(notif.innerText)+1;
+		}else{
+			var a = userLi.getElementsByTagName("a")[0];
+			if (a){
+				var span = document.createElement("span");
+				span.className="message-notif";
+				span.innerText="1"
+				a.append(span);
+			}
+		}
+	}
+}
+
+
+function addRequest(data) {
+
+	var elem = document.getElementById("requestsLu");
+	var li = document.createElement("li");
+	li.className="list-group-item";
+	li.id = "r"+data.user.contactId;
+
+	var label = document.createElement("label");
+	label.className="title"
+	label.innerText=data.user.username;
+
+	var btn1 = document.createElement("button");
+	btn1.id="accept";
+	btn1.type="button";
+	btn1.className="btn btn-success btn-sm btn-space";
+	btn1.innerHTML="V";
+
+	var btn2 = document.createElement("button");
+	btn2.id="refuse";
+	btn2.type="button";
+	btn2.className="btn btn-danger btn-sm";
+	btn2.innerHTML="X";
+
+	li.appendChild(label);
+	li.appendChild(btn1);
+	li.appendChild(btn2);
+
+	elem.appendChild(li);
+}
+
+
+// Add a contact to the list
+function addContact(contact,cryptedContact){
+	var elem = document.getElementById("contactsLu");
+	var li = document.createElement("li");
+	li.className="list-group-item";
+	li.id=contact.id;
+
+	var span = document.createElement("span");
+	span.className="title";
+	span.innerText=contact.username;
+
+	var status = document.createElement("img")
+	switch(contact.status) {
+	    case "Online":
+	        status.src='/img/online.png';
+	        break;
+	    case "Offline":
+	        status.src='/img/offline.png';
+	        break;
+	    case "Away":
+	        status.src='/img/away.png';
+	        break;
+	    case "Busy":
+	        status.src='/img/busy.png';
+	        break;	        	        
+	    default:
+	        status.src='/img/custom.png';
+	}
+
+	li.appendChild(status);
+	li.appendChild(span);
+
+	elem.appendChild(li);
+}
+
+
+/*
+/
+/ Search User On Enter
+/
+*/
+$('#searchInput').on("keyup", function(e) {
+    if (e.keyCode == 13) {
+    	var username = document.getElementById('searchInput').value;
+    	if (username!=""){
+			searchUser(username);
+			$('#searchInput').popover('hide')
+		}
+    }
+});
+function openUserProfile(user){
+	$('#userProfileModal').modal('show');
+	setUserProfile(user);
+}
+$( document.body ).click(function() {
+	$('#searchInput').popover('hide')
+});
+
+
+
+/*
+/	Accept or refuse Request
+/
+*/
+
+var $requestsLu=$('#requestsLu');
+
+// Button accept request
+$requestsLu.on('click','button#accept',function (){
+	var requestId = $(this)["0"].parentElement.id.slice(1);
+	AcceptRequest(requestId);
+}); 
+
+// Button refuse request
+$requestsLu.on('click','button#refuse',function (){
+	var requestId = $(this)["0"].parentElement.id.slice(1);
+	RefuseRequest(requestId);
+}); 
+
+function deleteRequest(contactId){
+	var elem = document.getElementById("r"+contactId);
+	if (elem!=null) elem.parentNode.removeChild(elem);
+}
+
+function deleteSuccess(data) {
+	var elem = document.getElementById(data.user.id);
+	if (elem != null) elem.parentNode.removeChild(elem);
+}
+
+</script>

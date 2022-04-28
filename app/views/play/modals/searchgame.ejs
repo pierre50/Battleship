@@ -1,0 +1,65 @@
+<div class="modal fade" id="searchUserModal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="searchUserModalTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="searchUserModalTitle">Search a game</h5>
+      </div>
+      <div class="modal-body">
+      	<center>
+        <div id="loadingDiv" class="loader"></div>
+        <div id="foundedDiv"><h5>User found</h5></div>
+        </center>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="searchUserModalBtn" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+var gameData;
+var searchUserModalOpen=false;
+
+// Search a game session
+$('#searchGameBtn').on('click', function(){
+  if (inGame){
+    alert("You are already in game");
+  }else{
+    gameData;
+    $('#loadingDiv').show();
+    $('#foundedDiv').hide();
+    if (searchUserModalOpen==false){
+      $('#searchUserModal').modal('show');
+      searchUserModalOpen=true;
+    }
+
+    setTimeout(function(){ searchUserGame(user) }, 3000);
+  }
+});
+
+// When we found a game session
+function foundUserGame(data){
+  gameData=data;
+
+  $('#loadingDiv').hide();
+  $('#foundedDiv').show();
+
+  if (searchUserModalOpen){
+    $('#searchUserModal').modal('hide');
+    searchUserModalOpen=false; 
+  }else{
+    $('#userGameRequestModal').modal('hide');
+  }
+
+  displayGame(gameData);
+}
+
+// If we cancel searching a game session
+$('#searchUserModalBtn').on('click', function(){
+  cancelSearchUserGame(user);
+  searchUserModalOpen=false;
+});
+
+</script>

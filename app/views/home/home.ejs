@@ -1,0 +1,57 @@
+<section id="home">
+    <div class="background"></div>
+    <div class="container">
+        <div class="row nopadding">
+            <div class="col-lg-12 text-center">
+                <div class="logo"></div>
+                <h3 class="text-white">ULTIMATE BATTLESHIP GAME</h3>
+                <h5 class="text-grey">Play Battleship, the most popular pencial and paper multiplayer game origin from WW2</h5><br>
+                <% if (user){ %>
+                    <a href="/play"><button class="btn btn-success btn-lg" >Play now!</button></a>
+                <% }else{ %>
+                    <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#loginModal">Play now !</button>
+                <% }%>
+            </div>
+        </div>
+    </div>
+</section>
+
+<% include modals/sign %>
+
+<script>
+$(document).ready(function() {
+    if(window.location.href.indexOf('#signin') != -1) {
+        $('#loginModal').modal('show');
+    }
+    if(window.location.href.indexOf('#signup') != -1) {
+        $('#loginModal').modal('show');
+        $('#registerForm').show();
+        $('#loginForm').hide();
+    }
+    if(window.location.href.indexOf('#forgot') != -1) {
+        $('#loginModal').modal('show');
+        $('#forgotForm').show();
+        $('#loginForm').hide();
+    }
+});
+
+$( "#forgotBtn" ).click(function() {
+    $('#forgotForm').show();
+    $('#loginForm').hide();
+});
+
+$( "#signinLi" ).click(function() {
+    $('#loginForm').show();
+    this.className="selectleftLi";
+    $('#signupLi')[0].className="";
+    $('#registerForm').hide();
+    $('#forgotForm').hide();
+});
+$( "#signupLi" ).click(function() {
+    $('#registerForm').show();
+    this.className="selectrightLi";
+    $('#signinLi')[0].className="";
+    $('#loginForm').hide();
+    $('#forgotForm').hide();
+});
+</script>

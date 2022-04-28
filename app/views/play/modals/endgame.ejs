@@ -1,0 +1,69 @@
+<div class="modal fade" id="endGameModal" tabindex="-1" role="dialog" aria-labelledby="endGameModalTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="endGameModalTitle"></h5>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function endGame(user){
+    setTimeout(function(){
+      inGame=null;
+      // Board settings
+      var rows = 10;
+      var cols = 10;
+      var squareSize = 32;
+
+      // Game settings
+      var info={
+        round:0,
+        missCount:0,
+        hitCount:0,
+        playingTime:0,
+      }
+
+      var yourTableGameBoard,oppoTableGameBoard;
+
+      // Boat settings
+      var boatSize=5;
+      var direction="vertical";
+
+      $('#yourOptions').show();
+      $('#oppoOptions').show();
+      $('#whoseTurnText').hide();
+
+      document.getElementById("carrierSpan").innerText=1;
+      document.getElementById("battleshipsSpan").innerText=2;
+      document.getElementById("submarineSpan").innerText=1;
+      document.getElementById("destroyersSpan").innerText=3;
+
+      document.getElementById('yourGameBoard').innerHTML="";
+      document.getElementById('oppoGameBoard').innerHTML="";
+
+      FillGameBoard(yourGameBoard,"y");
+      FillGameBoard(oppoGameBoard,"o");
+
+      $('#battleDiv').hide();
+      $('#welcomeDiv').show();
+
+      document.getElementById('timerSpan').innerHTML="";
+      document.getElementById("yourReadyBtn").className="btn";
+      document.getElementById("oppoReadyBtn").className="btn";
+    }, 2000);
+
+    if (user){
+      document.getElementById('endGameModalTitle').innerText="The winner is " + user.username;
+    }else{
+      document.getElementById('endGameModalTitle').innerText="Opponent leave the game";     
+    }
+    
+    $('#endGameModal').modal('show');
+
+  }
+</script>

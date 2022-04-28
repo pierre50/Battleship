@@ -1,0 +1,81 @@
+#contactStatus,#contactUsername{
+  display: inline;
+}
+
+.MessagePanel{
+}
+
+.message-title{
+  display: inline;
+}
+
+.message-header{
+  padding: 12px 12px 12px 12px;  
+  height: 44px;
+}
+.message-header .options { 
+  float:right;
+  color:#1A5276;
+  word-spacing: 10px;
+}
+.message-header .name { 
+  float:left;
+}
+.message-header .before{
+  float: left;
+  padding-right: 10px;
+}
+.message-footer{
+
+}
+
+.message-body{
+  height: calc(100% - 88px);
+}
+
+.chatlogs{
+  height:100%;
+  background:#fff;
+  overflow-x:hidden;
+  overflow-y:scroll;
+}
+.chat{
+  margin: 10px 0px 10px 0px;
+}
+.chat .message{
+  clear: left;
+}
+.chat .title .date { 
+    padding: 6px 0px 0px 0px;
+    font-size: 10px;
+    float: right;
+    color: #b9b9b9;
+}
+.chat .title .name { 
+  font-weight: bold; 
+  float:left;
+  color:#1A5276;
+}
+
+[contenteditable=true]:empty:before{
+  content: attr(placeholder);
+  display: block; /* For Firefox */
+}
+
+
+.chatform{
+  margin:0px;
+}
+.chatform .messagebox{
+  background-color: #f2f2f2;
+  -webkit-border-radius: 0px;
+  -moz-border-radius: 0px;
+  border-radius: 0px;
+  border: none;
+  /*border-top: 1px solid lightgrey;*/
+  height: 44px;
+  overflow-y: scroll;
+}
+textarea {
+  resize: none;
+}

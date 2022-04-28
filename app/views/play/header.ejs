@@ -1,0 +1,75 @@
+<nav class="navbar navbar-inverse navbar-toggleable-md navbar-light grey">
+	<button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+		<span class="navbar-toggler-icon"></span>
+	</button>
+
+  	<div class="collapse navbar-collapse" id="navbarSupportedContent">
+    	<ul class="navbar-nav mr-auto">
+			<li class="nav-item">
+				<a data-toggle="modal" data-target="#myProfileModal"><h5 class="header-title"> <%= user.username %></h5></a>
+				<div id="dropdownStatus" class="dropdown">
+					<a class="nav-link dropdown-toggle nopadding" id="navbarDropdownStatus" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				    		<%switch (user.status) {
+					            case "Online":%>
+					                <label id="navStatus"><img src="/img/online.png" alt="" /> <%= user.status %></label>
+					            <%break;
+					            case "Offline":%>
+					                <label id="navStatus"><img src="/img/offline.png" alt="" /> <%= user.status %></label>
+					            <%break;
+					            case "Busy":%>
+					                <label id="navStatus"><img src="/img/busy.png" alt="" /> <%= user.status %></label>
+					            <%break;
+					            case "Away":%>
+					                <label id="navStatus"><img src="/img/away.png" alt="" /> <%= user.status %></label>
+					            <%break;
+					            default: %>
+					                <label id="navStatus"><img src="/img/custom.png" alt="" /> <%= user.status %></label>
+					        <% } %>
+					</a>
+					<ul id="statusList" class="dropdown-menu" aria-labelledby="dropdownStatusButton">
+						<li data-value="Online"><a class="dropdown-item"><img src="/img/online.png"/> Online</a></li>
+						<li data-value="Busy"><a class="dropdown-item"><img src="/img/busy.png"/> Busy</a></li>
+						<li data-value="Away"><a class="dropdown-item"><img src="/img/away.png"/> Away</a></li>
+						<li data-value="Offline"><a class="dropdown-item"><img src="/img/offline.png"/> Offline</a></li>
+					</ul>
+				</div>
+			</li>
+		</ul>
+		<ul class="navbar-nav mx-auto">
+			<li class="nav-item" id="searchGameBtn"><a class="nav-link">Join a game</a></li>
+			<li class="nav-item" id="leaderboardBtn"><a class="nav-link">Leaderboard</a></li>
+
+    	</ul>
+    	<ul class="navbar-nav my-2 my-lg-0">
+			<li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
+    	</ul>
+  	</div>
+</nav>
+
+<% include modals/myprofile %>
+<% include modals/leaderboard %>
+<% include modals/searchgame %>
+
+<script>
+
+// Avoid close dropdown when we close on it
+$(document).on('click', '.dropdown', function (e) {
+  e.stopPropagation();
+});
+
+// Change status
+$('#statusList li').on('click', function(){
+    // Get the value of the status
+	var dataValue=$(this).attr('data-value');
+	if (dataValue!=null){
+        // Change the new status on nav bar
+		$('#navStatus')[0].innerHTML = '<img src="/img/'+dataValue.toLowerCase()+'.png"/> ' + dataValue;
+        // Send request to server
+        ChangeStatus(dataValue);
+        // Close DropDown
+    	$(".myFakeClass").dropdown('toggle');
+	}
+});
+
+
+</script>
